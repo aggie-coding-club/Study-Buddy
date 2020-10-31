@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="bResetShared"
+        >Reset Sharedprefs</string>
+    <string name="tWelcomeBack"
+        >Welcome back, {name}</string>
+    <string name="iAvatar"
+        >user avatar</string>
+    <string name="tUploadNotes"
+        >Upload Notes</string>
+    <string name="tReviewFlashcards"
+        >Review Flashcards</string>
+    <string name="tGoalProgess"
+        >Check Goal Progress</string>
+
+    <string-array name="classes_array">
+        <item>POLS 205</item>
+        <item>MATH 251</item>
+    </string-array>
+</resources>
