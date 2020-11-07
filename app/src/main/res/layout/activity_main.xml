@@ -34,16 +34,18 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.874" />
 
-    <ImageView
+    <ImageButton
         android:id="@+id/imageView2"
-        android:layout_width="60dp"
-        android:layout_height="82dp"
+        android:layout_width="63dp"
+        android:layout_height="63dp"
+        android:layout_centerHorizontal="true"
         android:layout_marginEnd="16dp"
         android:contentDescription="@string/iAvatar"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0"
+        app:layout_constraintVertical_bias="0.028"
+        android:scaleType="fitXY"
         app:srcCompat="@drawable/avatar" />
 
     <com.google.android.material.tabs.TabLayout
@@ -103,16 +105,5 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.122" />
 
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="412dp"
-        android:layout_height="87dp"
-        android:background="#5B5A3030"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

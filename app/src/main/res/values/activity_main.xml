@@ -12,7 +12,10 @@
         >Review Flashcards</string>
     <string name="tGoalProgess"
         >Check Goal Progress</string>
-
+    <string name="tOpenGallery"
+        >Open Gallery</string>
+    <string name="tTakePhoto"
+        >Open Camera</string>
     <string-array name="classes_array">
         <item>POLS 205</item>
         <item>MATH 251</item>
