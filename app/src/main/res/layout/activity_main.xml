@@ -47,7 +47,7 @@
         app:srcCompat="@drawable/avatar" />
 
     <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tabLayout"
+        android:id="@+id/tabBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#83CD897C"
@@ -60,20 +60,34 @@
         app:tabTextColor="#000000">
 
         <com.google.android.material.tabs.TabItem
+            android:id="@+id/TabUploadNotes"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/tUploadNotes" />
 
         <com.google.android.material.tabs.TabItem
+            android:id="@+id/TabReviewFlashcards"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/tReviewFlashcards" />
 
         <com.google.android.material.tabs.TabItem
+            android:id="@+id/TabGoalProgress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/tGoalProgess" />
     </com.google.android.material.tabs.TabLayout>
+
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/viewPager"
+        android:layout_width="409dp"
+        android:layout_height="433dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tabBar"
+        app:layout_constraintVertical_bias="0.0" />
 
     <Spinner
         android:id="@+id/spinner"
@@ -90,6 +104,7 @@
         app:layout_constraintVertical_bias="0.122" />
 
     <TextView
+        android:id="@+id/textView2"
         android:layout_width="412dp"
         android:layout_height="87dp"
         android:background="#5B5A3030"
