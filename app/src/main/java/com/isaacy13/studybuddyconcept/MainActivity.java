@@ -14,6 +14,8 @@ import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+
 import com.google.android.material.tabs.TabItem;
 import com.google.android.material.tabs.TabLayout;
 
@@ -30,23 +32,28 @@ public class MainActivity extends AppCompatActivity {
         // grab sharedpreferences values
         SharedPreferences sharedPreferences = getSharedPreferences("username", Context.MODE_PRIVATE);
         String current_username = sharedPreferences.getString("username", "defaultValue");
-
+        setContentView(R.layout.activity_main);
         // if is user's first time, display welcome screen
-        if (current_username != "defaultValue") {
-            setContentView(R.layout.activity_main);
+        if (current_username != "defaultValue")
             welcomeUser(current_username);
-        } else {
+        else
             startActivity(new Intent(MainActivity.this, firstWelcomeScreen.class));
-        }
 
         // populate class drop-down menu
         populateClasses();
 
-        // temporary reset buttons
+        // add a class button
+        Button addAClass = findViewById(R.id.bAddClass);
+        addAClass.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick (View v) {addClass(v);} });
+
+        // temporary reset button
         Button resetSharedPrefs = findViewById(R.id.resetSharedPref);
         resetSharedPrefs.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick (View v) {resetPrefs(v);}});
+            public void onClick (View v) {resetPrefs(v);} });
+
 
         // initialize tab bar, tabs, and viewpager
         TabLayout tabLayout = findViewById(R.id.tabBar);
@@ -67,22 +74,18 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-
-            }
+            public void onTabUnselected(TabLayout.Tab tab) { }
 
             @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-
-            }
+            public void onTabReselected(TabLayout.Tab tab) { }
         });
 
     }
 
     // changes welcome text
     public void welcomeUser(String username) {
-        TextView welcomeBack = findViewById(R.id.tWelcomeBack);
-        welcomeBack.setText(String.format("Welcome back, %s", username));
+        TextView welcomeBack = findViewById(R.id.tNameHolder);
+        welcomeBack.setText(String.format("%s", username));
     }
 
     // resets sharedpreferences
@@ -99,5 +102,10 @@ public class MainActivity extends AppCompatActivity {
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.classes_array, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
+    }
+
+    public void addClass(View v) {
+        // FIGURE OUT A WAY TO ADD CLASSES TODO
+        // maybe sharedpreferences?
     }
 }

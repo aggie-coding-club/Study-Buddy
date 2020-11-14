@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -39,10 +40,10 @@ public class firstWelcomeScreen extends AppCompatActivity {
     public void nameSubmit (View v) {
         EditText tv = findViewById(R.id.ptEnterName);
         String username = tv.getText().toString();
-        System.out.println(username);
-        saveUserName(username);
-        //setContentView(R.layout.activity_main);
-        startActivity(new Intent(firstWelcomeScreen.this, MainActivity.class));
+        if (validUsername(username)) {
+            saveUserName(username);
+            startActivity(new Intent(firstWelcomeScreen.this, MainActivity.class));
+        }
     }
 
     private void saveUserName(String username) {
@@ -50,5 +51,35 @@ public class firstWelcomeScreen extends AppCompatActivity {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("username", username);
         editor.apply();
+    }
+
+    public boolean validUsername(String s) {
+        try {
+            // username can't be longer than 20 characters or have any invalid symbols
+            if (s.length() > 20)
+                throw new RuntimeException("The username can't be longer than 20 characters");
+            else if (s.length() == 0)
+                throw new RuntimeException("The username can't be blank");
+
+            // check for invalid symbols
+            s = s.toLowerCase();
+            char[] s_charArray = s.toCharArray();
+            int numLetters = 0;
+
+            // username can only have letters, dashes, spaces, and numbers
+            for (int i = 0; i < s_charArray.length; i++) {
+                if (!Character.isDigit(s_charArray[i]) && !Character.isLetter(s_charArray[i]) && s_charArray[i] != ' ' && s_charArray[i] != '-')
+                    throw new RuntimeException("The username can only have letters, dashes, spaces, and numbers");
+                if (Character.isLetter(s_charArray[i]))
+                    numLetters++;
+            }
+            if (numLetters == 0)
+                throw new RuntimeException("You have to have at least one letter in your username");
+            return true;
+        } catch (Exception e) {
+            // when exception is thrown, pop up alert
+            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+            return false;
+        }
     }
 }

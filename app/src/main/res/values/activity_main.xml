@@ -3,7 +3,7 @@
     <string name="bResetShared"
         >Reset Sharedprefs</string>
     <string name="tWelcomeBack"
-        >Welcome back, {name}</string>
+        >Welcome back,</string>
     <string name="iAvatar"
         >user avatar</string>
     <string name="tUploadNotes"
@@ -12,7 +12,14 @@
         >Review Flashcards</string>
     <string name="tGoalProgess"
         >Check Goal Progress</string>
-
+    <string name="tNameHolder">
+        {name}</string>
+    <string name="tOpenGallery"
+        >Open Gallery</string>
+    <string name="tTakePhoto"
+        >Open Camera</string>
+    <string name="tAddClass">
+        Add A Class</string>
     <string-array name="classes_array">
         <item>POLS 205</item>
         <item>MATH 251</item>
