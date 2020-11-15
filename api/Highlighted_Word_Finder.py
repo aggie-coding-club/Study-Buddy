@@ -211,7 +211,7 @@ def detect_document(path):
     image = vision.Image(content=content)
 
     response = client.document_text_detection(image=image)
-    """
+    #"""
     if len(response.full_text_annotation.pages) == 1 and len(response.full_text_annotation.pages[0].blocks) == 1 and len(response.full_text_annotation.pages[0].blocks[0].paragraphs) == 1 and len(response.full_text_annotation.pages[0].blocks[0].paragraphs[0].words) == 1:
         for page in response.full_text_annotation.pages:
             for block in page.blocks:
@@ -231,8 +231,8 @@ def detect_document(path):
                         for symbol in word.symbols:
                             print('\tSymbol: {} (confidence: {})'.format(
                                 symbol.text, symbol.confidence))
-    """
-                            
+    #"""
+    """                        
     print(path)
     for page in response.full_text_annotation.pages:
         for block in page.blocks:
@@ -252,7 +252,7 @@ def detect_document(path):
                     for symbol in word.symbols:
                         print('\tSymbol: {} (confidence: {})'.format(
                             symbol.text, symbol.confidence))
-
+    """
     if response.error.message:
         raise Exception(
             '{}\nFor more info on error messages, check: '
