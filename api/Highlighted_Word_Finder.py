@@ -204,7 +204,7 @@ def findHighlightedWordDefinitions(path):
             
         
     
-
+#Google Vision function that returns words in an image as strings as long as they're only single words
 def detect_document(path):
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="../../../StudyBuddyResources/service_account_token.json"
     
@@ -216,8 +216,6 @@ def detect_document(path):
     image = vision.Image(content=content)
 
     response = client.document_text_detection(image=image)
-    
-    wordList = []
     
     #"""
     if len(response.full_text_annotation.pages) == 1 and len(response.full_text_annotation.pages[0].blocks) == 1 and len(response.full_text_annotation.pages[0].blocks[0].paragraphs) == 1 and len(response.full_text_annotation.pages[0].blocks[0].paragraphs[0].words) == 1:
@@ -240,10 +238,6 @@ def detect_document(path):
                         for symbol in word.symbols:
                             print('\tSymbol: {} (confidence: {})'.format(
                                 symbol.text, symbol.confidence))
-                                
-                        for item in wordList:
-                            if item.upper() == word_text.upper():
-                                break
                                 
                         return word_text
     else:
@@ -276,6 +270,7 @@ def detect_document(path):
             'https://cloud.google.com/apis/design/errors'.format(
                 response.error.message))
 
+#Requests dictionary data from Google Dictionary and returns a list of definitions for a given word
 def findDefinition(word):
     if not (type(word) is str):
         return
@@ -310,4 +305,4 @@ def findDefinition(word):
 
 findHighlightedWordDefinitions("Images/MultipleHighlightsImage.jpg")
 #detect_document("Images/Processing Images/2.jpg")
-#findDefinition("jerk")
+#findDefinition("type")
