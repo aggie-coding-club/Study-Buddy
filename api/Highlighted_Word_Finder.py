@@ -22,11 +22,14 @@ def compareColors(colorList_1,colorList_2,tolerance):
 #Does a scan of an image with a step size depending on image size and uses Google Vision OCR on highlighted words
 def find_highlighted_words(path):
     selected_image = PIL.Image.open(path)
-    image_width = selected_image.height
-    image_height = selected_image.width
+    image_width = selected_image.width
+    image_height = selected_image.height
     colorList = []
     
-    colorScanTolerance = 105
+    print(image_width)
+    print(image_height)
+    
+    colorScanTolerance = 100
     highlightColorTolerance = 50
     
     stepSizeX = 1
@@ -42,17 +45,18 @@ def find_highlighted_words(path):
         for y in range(0, image_height, stepSizeY):
             colorMatch = False
             for color in colorList:
-                if compareColors(selected_image.getpixel((y,x)), color[0],colorScanTolerance):
-                    color[0][0] = round(color[0][0]*((color[1]-1)/color[1]) + selected_image.getpixel((y,x))[0] / color[1])
-                    color[0][1] = round(color[0][1]*((color[1]-1)/color[1]) + selected_image.getpixel((y,x))[1] / color[1])
-                    color[0][2] = round(color[0][2]*((color[1]-1)/color[1]) + selected_image.getpixel((y,x))[2] / color[1])
+                if compareColors(selected_image.getpixel((x,y)), color[0],colorScanTolerance):
+                    color[0][0] = round(color[0][0]*((color[1]-1)/color[1]) + selected_image.getpixel((x,y))[0] / color[1])
+                    color[0][1] = round(color[0][1]*((color[1]-1)/color[1]) + selected_image.getpixel((x,y))[1] / color[1])
+                    color[0][2] = round(color[0][2]*((color[1]-1)/color[1]) + selected_image.getpixel((x,y))[2] / color[1])
                     color[1] += 1
                     colorMatch = True
                     break;
             if not colorMatch:
-                colorList.append([list(selected_image.getpixel((y,x))), 1])
+                colorList.append([list(selected_image.getpixel((x,y))), 1])
             
         
+    print("Color frequency: ")
     for i in colorList:
         print(i)
     
@@ -64,7 +68,7 @@ def find_highlighted_words(path):
     for x in range(0, image_width, stepSizeX):
         for y in range(0, image_height, stepSizeY):
             for color in coordinatesList:
-                if compareColors(selected_image.getpixel((y,x)), color[0], highlightColorTolerance):
+                if compareColors(selected_image.getpixel((x,y)), color[0], highlightColorTolerance):
                     if x < color[1]:
                         color[1] = x
                     if x > color[3]:
@@ -74,32 +78,56 @@ def find_highlighted_words(path):
                     if y > color[4]:
                         color[4] = y
                         
+    print("Initial highlight coordinates: ")
     for i in coordinatesList:
         print(i)
     
-    #TODO: Scan coordinate blocks to filter out unhighlighted text
+    #Scans coordinate blocks to filter out unhighlighted text
     for color in coordinatesList:
         totalStepCount = 0
         matchingStepCount = 0
         for x in range(color[1], color[3], stepSizeX):
             for y in range(color[2], color[4], stepSizeY):
                 totalStepCount += 1
-                if compareColors(selected_image.getpixel((y,x)), color[0], highlightColorTolerance):
+                if compareColors(selected_image.getpixel((x,y)), color[0], highlightColorTolerance):
                     matchingStepCount += 1
         if (matchingStepCount / totalStepCount) < 0.5:
             coordinatesList.remove(color)
-            
+           
+    print("Filtered highlight coordinates: ")
     for i in coordinatesList:
         print(i)
     
     #TODO: Scan to adjust highlight coordinates to account for text sticking out of the highlight
+    """
+    for color in coordinatesList:
+        for x in range(color[1], color[3], stepSizeX):
+            if detect_dark_color(selected_image.getpixel((color[2],x)), color[0]):
+                recursiveGetStickyOutyText(color[0], )
+            if selected_image.getpixel((color[4],x)):
+                
+        for y in range(color[2], color[4], stepSizeY):
+            count = 1
+    """
+    #Colors areas outside of coordinate blocks white and saves as new images for each coordinate block
+    imageCount = 0
+    for color in coordinatesList:
+        imageCount += 1
+        imageCopy = Image.new(selected_image.mode, selected_image.size)
+        pixels = imageCopy.load()
+        for x in range(0, image_width):
+            for y in range(0, image_height):
+                if(x < color[1] or x > color[3] or y < color[2] or y > color[4]):
+                    pixels[x,y] = (255, 255, 255)
+                else:
+                    pixels[x,y] = selected_image.getpixel((x,y))
+        imageCopy.save("./Images/Processing Images/" + str(imageCount) + ".jpg")
     
-    
-    #TODO: Color areas outside of coordinate blocks white and save as new images for each coordinate block
-    
-    
-    #TODO: Use Google Vision OCR on each saved image
-    
+    #Uses Google Vision OCR on each saved image
+    imageCount = 0
+    for color in coordinatesList:
+        imageCount += 1
+        detect_document("./Images/Processing Images/" + str(imageCount) + ".jpg")
     
 
 def detect_document(path):
@@ -113,7 +141,28 @@ def detect_document(path):
     image = vision.Image(content=content)
 
     response = client.document_text_detection(image=image)
+    
+    if len(response.full_text_annotation.pages) == 1 and len(response.full_text_annotation.pages[0].blocks) == 1 and len(response.full_text_annotation.pages[0].blocks[0].paragraphs) == 1 and len(response.full_text_annotation.pages[0].blocks[0].paragraphs[0].words) == 1:
+        for page in response.full_text_annotation.pages:
+            for block in page.blocks:
+                print('\nBlock confidence: {}\n'.format(block.confidence))
 
+                for paragraph in block.paragraphs:
+                    print('Paragraph confidence: {}'.format(
+                        paragraph.confidence))
+
+                    for word in paragraph.words:
+                        word_text = ''.join([
+                            symbol.text for symbol in word.symbols
+                        ])
+                        print('Word text: {} (confidence: {})'.format(
+                            word_text, word.confidence))
+
+                        for symbol in word.symbols:
+                            print('\tSymbol: {} (confidence: {})'.format(
+                                symbol.text, symbol.confidence))
+                            
+    """
     for page in response.full_text_annotation.pages:
         for block in page.blocks:
             print('\nBlock confidence: {}\n'.format(block.confidence))
@@ -132,12 +181,12 @@ def detect_document(path):
                     for symbol in word.symbols:
                         print('\tSymbol: {} (confidence: {})'.format(
                             symbol.text, symbol.confidence))
-
+    """
     if response.error.message:
         raise Exception(
             '{}\nFor more info on error messages, check: '
             'https://cloud.google.com/apis/design/errors'.format(
                 response.error.message))
 
-find_highlighted_words("Images/IMG_3200.jpg")
+find_highlighted_words("Images/IMG_3198.jpg")
 #detect_document("Images/IMG_3200.jpg")
