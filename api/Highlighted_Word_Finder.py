@@ -26,6 +26,39 @@ def detect_darker_color(possibleDarkerColor, lightColor, tolerancePercentage):
     else:
         return False
         
+def recursiveFindHighlightBlock(image, color, tolerance, x, y, xStep, yStep, topLeft, bottomRight, visitedMatrix):
+    if x < 0 or y < 0 or x >= image.width or y >= image.height or visitedMatrix[x][y]:
+        return
+    if not compareColors(image.getpixel((x,y)), color, tolerance):
+        visitedMatrix[x][y] = True
+        return
+
+    visitedMatrix[x][y] = True
+    
+    #print("Old: " + str(topLeft) + ", " + str(bottomRight))
+    changed = False
+    
+    if x < topLeft[0]:
+        topLeft[0] = x
+        changed = True
+    if y < topLeft[1]:
+        topLeft[1] = y
+        changed = True
+    if x > bottomRight[0]:
+        bottomRight[0] = x
+        changed = True
+    if y > bottomRight[1]:
+        bottomRight[1] = y
+        changed = True
+    
+    #if changed:
+    #    print("New: " + str(topLeft) + ", " + str(bottomRight))
+    
+    recursiveFindHighlightBlock(image, color, tolerance, x + xStep, y, xStep, yStep, topLeft, bottomRight, visitedMatrix)
+    recursiveFindHighlightBlock(image, color, tolerance, x - xStep, y, xStep, yStep, topLeft, bottomRight, visitedMatrix)
+    recursiveFindHighlightBlock(image, color, tolerance, x, y + yStep, xStep, yStep, topLeft, bottomRight, visitedMatrix)
+    recursiveFindHighlightBlock(image, color, tolerance, x, y - yStep, xStep, yStep, topLeft, bottomRight, visitedMatrix)
+        
 
 #Does a scan of an image with a step size depending on image size and uses Google Vision OCR on highlighted words
 #TODO: Adjust code to handle multiple highlighted words
@@ -34,9 +67,6 @@ def find_highlighted_words(path):
     image_width = selected_image.width
     image_height = selected_image.height
     colorList = []
-    
-    print(image_width)
-    print(image_height)
     
     colorScanTolerance = 100
     highlightColorTolerance = 50
@@ -92,6 +122,34 @@ def find_highlighted_words(path):
     print("Initial highlight coordinates: ")
     for i in coordinatesList:
         print(i)
+        
+    
+    #TODO: Separate multiple highlighted words 
+    
+    tempCoordinatesList = []
+    for color in coordinatesList:
+        #visitedMatrix = [[False] * image_width for _ in range(image_height)]
+        print("Color: " + str(color[0]))
+        visitedMatrix = [[False] * image_height for _ in range(image_width)]
+        for x in range(color[1], color[3], stepSizeX * 6):
+            for y in range(color[2], color[4], stepSizeY * 6):
+                topLeft = [color[3],color[4]]
+                bottomRight = [color[1],color[2]]
+                if not (visitedMatrix[x][y]):
+                    recursiveFindHighlightBlock(selected_image, color[0], highlightColorTolerance, x, y, stepSizeX * 6, stepSizeY * 6, topLeft, bottomRight, visitedMatrix)
+                if not ([color[0],topLeft[0],topLeft[1],bottomRight[0],bottomRight[1]] in tempCoordinatesList) and not (topLeft[0] == color[3] and topLeft[1] == color[4] and bottomRight[0] == color[1] and bottomRight[1] == color[2]) and not (topLeft[0] == bottomRight[0] or topLeft[1] == bottomRight[1]):
+                    #print("individualBlock is " + str(topLeft) + ", " + str(bottomRight))
+                    #print("fullBlock is (" + str(color[1]) + "," + str(color[2]) + ") , (" + str(color[3]) + "," + str(color[4]) + ")")
+                    tempCoordinatesList.append([color[0],topLeft[0],topLeft[1],bottomRight[0],bottomRight[1]])
+    
+    coordinatesList = tempCoordinatesList
+
+    
+    print("Separated highlight coordinates: ")
+    for i in coordinatesList:
+        print(i)
+
+    print("done")
     
     #Scans coordinate blocks to filter out unhighlighted text
     for color in coordinatesList:
@@ -108,12 +166,6 @@ def find_highlighted_words(path):
     print("Filtered highlight coordinates: ")
     for i in coordinatesList:
         print(i)
-        
-
-    #TODO: Separate multiple highlighted words
-
-
-
     
     
     #Checks for text sticking out of the highlight and adjusts highlight coordinates to account for it
@@ -140,6 +192,7 @@ def find_highlighted_words(path):
                     pixels[x,y] = selected_image.getpixel((x,y))
         imageCopy.save("./Images/Processing Images/" + str(imageCount) + ".jpg")
     
+    
     #Uses Google Vision OCR on each saved image
     imageCount = 0
     for color in coordinatesList:
@@ -158,7 +211,7 @@ def detect_document(path):
     image = vision.Image(content=content)
 
     response = client.document_text_detection(image=image)
-    
+    """
     if len(response.full_text_annotation.pages) == 1 and len(response.full_text_annotation.pages[0].blocks) == 1 and len(response.full_text_annotation.pages[0].blocks[0].paragraphs) == 1 and len(response.full_text_annotation.pages[0].blocks[0].paragraphs[0].words) == 1:
         for page in response.full_text_annotation.pages:
             for block in page.blocks:
@@ -178,8 +231,9 @@ def detect_document(path):
                         for symbol in word.symbols:
                             print('\tSymbol: {} (confidence: {})'.format(
                                 symbol.text, symbol.confidence))
-                            
     """
+                            
+    print(path)
     for page in response.full_text_annotation.pages:
         for block in page.blocks:
             print('\nBlock confidence: {}\n'.format(block.confidence))
@@ -198,12 +252,12 @@ def detect_document(path):
                     for symbol in word.symbols:
                         print('\tSymbol: {} (confidence: {})'.format(
                             symbol.text, symbol.confidence))
-    """
+
     if response.error.message:
         raise Exception(
             '{}\nFor more info on error messages, check: '
             'https://cloud.google.com/apis/design/errors'.format(
                 response.error.message))
 
-find_highlighted_words("Images/IMG_3198.jpg")
-#detect_document("Images/IMG_3200.jpg")
+find_highlighted_words("Images/MultipleHighlightsImage.jpg")
+#detect_document("Images/Processing Images/2.jpg")
