@@ -19,7 +19,15 @@ def compareColors(colorList_1,colorList_2,tolerance):
     else:
         return False
 
+#Detects whether the first color is significantly darker than the second color based on the tolerance percentage
+def detect_darker_color(possibleDarkerColor, lightColor, tolerancePercentage):
+    if possibleDarkerColor[0] + possibleDarkerColor[1] + possibleDarkerColor[2] < (lightColor[0] + lightColor[1] + lightColor[2]) * tolerancePercentage:
+        return True
+    else:
+        return False
+
 #Does a scan of an image with a step size depending on image size and uses Google Vision OCR on highlighted words
+#TODO: Adjust code to handle multiple highlighted words
 def find_highlighted_words(path):
     selected_image = PIL.Image.open(path)
     image_width = selected_image.width
@@ -31,6 +39,8 @@ def find_highlighted_words(path):
     
     colorScanTolerance = 100
     highlightColorTolerance = 50
+    overflowTextContrastTolerance = 0.8
+    overflowTextHeightMultiplier = 0.35
     
     stepSizeX = 1
     stepSizeY = 1
@@ -97,18 +107,17 @@ def find_highlighted_words(path):
     print("Filtered highlight coordinates: ")
     for i in coordinatesList:
         print(i)
-    
-    #TODO: Scan to adjust highlight coordinates to account for text sticking out of the highlight
-    """
+        
+    #Checks for text sticking out of the highlight and adjusts highlight coordinates to account for it
     for color in coordinatesList:
         for x in range(color[1], color[3], stepSizeX):
-            if detect_dark_color(selected_image.getpixel((color[2],x)), color[0]):
-                recursiveGetStickyOutyText(color[0], )
-            if selected_image.getpixel((color[4],x)):
-                
-        for y in range(color[2], color[4], stepSizeY):
-            count = 1
-    """
+            if detect_darker_color(selected_image.getpixel((x,color[2])), color[0], overflowTextContrastTolerance):
+                color[2] = color[2] - ((color[4] - color[2]) * overflowTextHeightMultiplier)
+            if detect_darker_color(selected_image.getpixel((x,color[4])), color[0], overflowTextContrastTolerance):
+                color[4] = color[4] + ((color[4] - color[2]) * overflowTextHeightMultiplier)
+
+    #TODO: Use a visitedMatrix and 'for loops' to separate multiple highlighted words
+
     #Colors areas outside of coordinate blocks white and saves as new images for each coordinate block
     imageCount = 0
     for color in coordinatesList:
