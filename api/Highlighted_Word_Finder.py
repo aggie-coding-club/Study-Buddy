@@ -25,6 +25,7 @@ def detect_darker_color(possibleDarkerColor, lightColor, tolerancePercentage):
         return True
     else:
         return False
+        
 
 #Does a scan of an image with a step size depending on image size and uses Google Vision OCR on highlighted words
 #TODO: Adjust code to handle multiple highlighted words
@@ -39,7 +40,7 @@ def find_highlighted_words(path):
     
     colorScanTolerance = 100
     highlightColorTolerance = 50
-    overflowTextContrastTolerance = 0.8
+    overflowTextContrastTolerance = 0.9
     overflowTextHeightMultiplier = 0.35
     
     stepSizeX = 1
@@ -108,6 +109,13 @@ def find_highlighted_words(path):
     for i in coordinatesList:
         print(i)
         
+
+    #TODO: Separate multiple highlighted words
+
+
+
+    
+    
     #Checks for text sticking out of the highlight and adjusts highlight coordinates to account for it
     for color in coordinatesList:
         for x in range(color[1], color[3], stepSizeX):
@@ -115,8 +123,8 @@ def find_highlighted_words(path):
                 color[2] = color[2] - ((color[4] - color[2]) * overflowTextHeightMultiplier)
             if detect_darker_color(selected_image.getpixel((x,color[4])), color[0], overflowTextContrastTolerance):
                 color[4] = color[4] + ((color[4] - color[2]) * overflowTextHeightMultiplier)
+                
 
-    #TODO: Use a visitedMatrix and 'for loops' to separate multiple highlighted words
 
     #Colors areas outside of coordinate blocks white and saves as new images for each coordinate block
     imageCount = 0
@@ -140,7 +148,7 @@ def find_highlighted_words(path):
     
 
 def detect_document(path):
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="service_account_token.json"
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="../../../StudyBuddyResources/service_account_token.json"
     
     client = vision.ImageAnnotatorClient()
     
