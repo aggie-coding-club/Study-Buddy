@@ -4,8 +4,9 @@ import os
 import PIL
 from PIL import Image
 from google.cloud import vision
+import requests
 
-#Returns whether the two colors are similar enough based on the tolerance parameter
+#Returns true or false depending on whether the two colors are similar enough based on the tolerance parameter
 def compareColors(colorList_1,colorList_2,tolerance):
     
     redDistance = abs(colorList_1[0] - colorList_2[0])
@@ -26,6 +27,7 @@ def detect_darker_color(possibleDarkerColor, lightColor, tolerancePercentage):
     else:
         return False
         
+#Recursive function for finding the top left coordinates and bottom right coordinates of individual blocks of highlighting
 def recursiveFindHighlightBlock(image, color, tolerance, x, y, xStep, yStep, topLeft, bottomRight, visitedMatrix):
     if x < 0 or y < 0 or x >= image.width or y >= image.height or visitedMatrix[x][y]:
         return
@@ -35,24 +37,14 @@ def recursiveFindHighlightBlock(image, color, tolerance, x, y, xStep, yStep, top
 
     visitedMatrix[x][y] = True
     
-    #print("Old: " + str(topLeft) + ", " + str(bottomRight))
-    changed = False
-    
     if x < topLeft[0]:
         topLeft[0] = x
-        changed = True
     if y < topLeft[1]:
         topLeft[1] = y
-        changed = True
     if x > bottomRight[0]:
         bottomRight[0] = x
-        changed = True
     if y > bottomRight[1]:
         bottomRight[1] = y
-        changed = True
-    
-    #if changed:
-    #    print("New: " + str(topLeft) + ", " + str(bottomRight))
     
     recursiveFindHighlightBlock(image, color, tolerance, x + xStep, y, xStep, yStep, topLeft, bottomRight, visitedMatrix)
     recursiveFindHighlightBlock(image, color, tolerance, x - xStep, y, xStep, yStep, topLeft, bottomRight, visitedMatrix)
@@ -60,9 +52,8 @@ def recursiveFindHighlightBlock(image, color, tolerance, x, y, xStep, yStep, top
     recursiveFindHighlightBlock(image, color, tolerance, x, y - yStep, xStep, yStep, topLeft, bottomRight, visitedMatrix)
         
 
-#Does a scan of an image with a step size depending on image size and uses Google Vision OCR on highlighted words
-#TODO: Adjust code to handle multiple highlighted words
-def find_highlighted_words(path):
+#Scans image with a step size depending on image size and uses Google Vision OCR and Google Dictionary API on highlighted words
+def findHighlightedWordDefinitions(path):
     selected_image = PIL.Image.open(path)
     image_width = selected_image.width
     image_height = selected_image.height
@@ -124,11 +115,9 @@ def find_highlighted_words(path):
         print(i)
         
     
-    #TODO: Separate multiple highlighted words 
-    
+    #Separates multiple highlighted words through recursively finding where individual blocks of color start and end for each color
     tempCoordinatesList = []
     for color in coordinatesList:
-        #visitedMatrix = [[False] * image_width for _ in range(image_height)]
         print("Color: " + str(color[0]))
         visitedMatrix = [[False] * image_height for _ in range(image_width)]
         for x in range(color[1], color[3], stepSizeX * 6):
@@ -138,8 +127,6 @@ def find_highlighted_words(path):
                 if not (visitedMatrix[x][y]):
                     recursiveFindHighlightBlock(selected_image, color[0], highlightColorTolerance, x, y, stepSizeX * 6, stepSizeY * 6, topLeft, bottomRight, visitedMatrix)
                 if not ([color[0],topLeft[0],topLeft[1],bottomRight[0],bottomRight[1]] in tempCoordinatesList) and not (topLeft[0] == color[3] and topLeft[1] == color[4] and bottomRight[0] == color[1] and bottomRight[1] == color[2]) and not (topLeft[0] == bottomRight[0] or topLeft[1] == bottomRight[1]):
-                    #print("individualBlock is " + str(topLeft) + ", " + str(bottomRight))
-                    #print("fullBlock is (" + str(color[1]) + "," + str(color[2]) + ") , (" + str(color[3]) + "," + str(color[4]) + ")")
                     tempCoordinatesList.append([color[0],topLeft[0],topLeft[1],bottomRight[0],bottomRight[1]])
     
     coordinatesList = tempCoordinatesList
@@ -149,7 +136,6 @@ def find_highlighted_words(path):
     for i in coordinatesList:
         print(i)
 
-    print("done")
     
     #Scans coordinate blocks to filter out unhighlighted text
     for color in coordinatesList:
@@ -193,11 +179,30 @@ def find_highlighted_words(path):
         imageCopy.save("./Images/Processing Images/" + str(imageCount) + ".jpg")
     
     
-    #Uses Google Vision OCR on each saved image
+    #Uses Google Vision OCR on each saved image and find definitions for highlighted words
     imageCount = 0
+    wordList = []
+    definitionList = []
+    
     for color in coordinatesList:
         imageCount += 1
-        detect_document("./Images/Processing Images/" + str(imageCount) + ".jpg")
+        wordList.append(detect_document("./Images/Processing Images/" + str(imageCount) + ".jpg"))
+        
+    wordList = list(dict.fromkeys(wordList))
+    
+    for word in wordList:
+        definitionList.append([word, findDefinition(word)])
+        
+    while [None, None] in definitionList:
+        definitionList.remove([None, None])
+        
+    for i in definitionList:
+        print(i)
+    
+    #Returns list of lists with the inner lists' first element being the word and its second element being a list of definitions
+    return definitionList
+            
+        
     
 
 def detect_document(path):
@@ -211,6 +216,9 @@ def detect_document(path):
     image = vision.Image(content=content)
 
     response = client.document_text_detection(image=image)
+    
+    wordList = []
+    
     #"""
     if len(response.full_text_annotation.pages) == 1 and len(response.full_text_annotation.pages[0].blocks) == 1 and len(response.full_text_annotation.pages[0].blocks[0].paragraphs) == 1 and len(response.full_text_annotation.pages[0].blocks[0].paragraphs[0].words) == 1:
         for page in response.full_text_annotation.pages:
@@ -225,12 +233,21 @@ def detect_document(path):
                         word_text = ''.join([
                             symbol.text for symbol in word.symbols
                         ])
+                        
                         print('Word text: {} (confidence: {})'.format(
                             word_text, word.confidence))
 
                         for symbol in word.symbols:
                             print('\tSymbol: {} (confidence: {})'.format(
                                 symbol.text, symbol.confidence))
+                                
+                        for item in wordList:
+                            if item.upper() == word_text.upper():
+                                break
+                                
+                        return word_text
+    else:
+        return
     #"""
     """                        
     print(path)
@@ -259,5 +276,38 @@ def detect_document(path):
             'https://cloud.google.com/apis/design/errors'.format(
                 response.error.message))
 
-find_highlighted_words("Images/MultipleHighlightsImage.jpg")
+def findDefinition(word):
+    if not (type(word) is str):
+        return
+    queryResult = requests.get("https://api.dictionaryapi.dev/api/v2/entries/en/" + word)
+    editedResult = queryResult.text.replace("\",\"","},{")
+    response = editedResult.split("},{")
+    definitionList = []
+    
+
+    
+    for i in range(len(response)):
+        if "definitions\":" in response[i]:
+            response[i] = response[i][13:]
+    
+
+
+    for i in response:
+        if "definition" in i:
+            definitionIndex = 1
+            while "[{\"definition\"" in i.split(":")[definitionIndex]:
+                definitionIndex += 1
+            temp = i.split("\":\"")[definitionIndex]
+            if "\"}]}]}]" in temp:
+                temp = temp[:-7]
+            if temp[-2:] == ".\"":
+                temp = temp[:-1]
+
+            definitionList.append(temp)
+    
+    return definitionList
+
+
+findHighlightedWordDefinitions("Images/MultipleHighlightsImage.jpg")
 #detect_document("Images/Processing Images/2.jpg")
+#findDefinition("jerk")
