@@ -3,13 +3,17 @@ Potential bugs:
 
 2. When text sticks out of the highlight, I basically increase the size of the block by a multiplier, which won't work if the highlight is too short or the text is too tall compared to the highlighted zone.
 
-3. Probably won't work when the paper is darker than the highlight because of my code detecting text sticking out of highlighted zones.
+3. Might not work as well when the paper is darker than the highlight or the text is lighter than the highlight because of how my "detect text sticking out of highlighted zones" code works.
 
-4. Google Vision might interpret a word as being two separate words if there's enough spacing between the letters, which means the definition of the word won't be looked up because I made the function dealing with Google Vision ignore when two words are highlighted.
+4. Google Vision might interpret a word as being two separate words if there's enough spacing between the letters, which means the definition of the word won't be looked up because I made the function dealing with Google Vision ignore when two words are highlighted in the same block.
 
-5. Maybe not a bug, but it won't work when a highlight has more than one word.
+5. Maybe not a bug, but it won't work when a block of highlight has more than one word inside it.
 
 6. Also maybe not a bug, but it won't detect text sticking out of the highlight if the text is a lighter color than the highlight color.
+
+7. If there's only a single word in the image, even if it's not highlighted, the definition will be found. The program needs some kind of way to recognize that the word isn't highlighted in a situation like that.
+
+8. From testing a sideways image, I don't think the program will work on a sideways image. Not completely sure though because Google Vision worked on the same sideways image before. If it doesn't work, the problem is on Google Vision's end probably.
 
 
 Potential improvements:
@@ -18,3 +22,7 @@ Potential improvements:
 2. The block of code adjusting coordinates to account for text sticking out of the highlight can be improved with recursion similar to the recursion I did to find individual highlight blocks. It would have to recursively find the top left and bottom right coordinates of the text sticking out and adjust the coordinates of the block if needed.
 
 3. In the block of code detecting if text is sticking out of the coordinate block, the function I use to detect it can be improved. Right now it just loosely compares how much darker the text sticking out is compared to the highlighted zone based on basic addition and a loose tolerance. There's probably a better way to tell how much darker one color is than another out there.
+
+4. If you want, the function with Google Vision can be altered so that even if multiple words are in a highlight, those multiple words are separated and their definitions are searched for independently of each other. You'd have to figure out how to deal with the processing image that shows the whole image though(the one that results from the solid background color of the paper being recognized as a highlight).
+
+5. The way I've written the program, multiple highlight colors can be used. Some of the potential bugs of the program would probably go away if the program was completely rewritten to search for a specific highlight color. It's a trade-off.
