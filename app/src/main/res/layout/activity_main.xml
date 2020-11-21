@@ -4,8 +4,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#d4d4d4"
+    android:background="#FFFFFF"
     tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/headerColor"
+        android:layout_width="412dp"
+        android:layout_height="87dp"
+        android:background="#422323"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
     <TextView
         android:id="@+id/tWelcomeBack"
@@ -13,54 +25,45 @@
         android:layout_height="39dp"
         android:background="#00232121"
         android:text="@string/tWelcomeBack"
-        android:textColor="#000000"
+        android:textColor="#FFFFFF"
         android:textSize="18sp"
         app:autoSizeTextType="uniform"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/imageView2"
+        app:layout_constraintEnd_toStartOf="@+id/imgProfilePicture"
         app:layout_constraintHorizontal_bias="0.168"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.01" />
 
-    <Button
-        android:id="@+id/resetSharedPref"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/bResetShared"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.198"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.901" />
-
     <ImageButton
-        android:id="@+id/imageView2"
+        android:id="@+id/imgProfilePicture"
         android:layout_width="63dp"
         android:layout_height="63dp"
         android:layout_centerHorizontal="true"
-        android:layout_marginEnd="16dp"
+        android:layout_marginEnd="12dp"
+        android:background="#00FFFFFF"
+        android:clickable="true"
         android:contentDescription="@string/iAvatar"
+        android:focusable="true"
+        android:scaleType="fitXY"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.028"
-        android:scaleType="fitXY"
+        app:layout_constraintVertical_bias="0.023"
         app:srcCompat="@drawable/avatar" />
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#83CD897C"
+        android:background="#834C170D"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.152"
-        app:tabTextColor="#000000">
+        app:layout_constraintVertical_bias="0.174"
+        app:tabTextColor="#FFFFFF">
 
         <com.google.android.material.tabs.TabItem
             android:id="@+id/TabUploadNotes"
@@ -83,66 +86,96 @@
 
     <androidx.viewpager.widget.ViewPager
         android:id="@+id/viewPager"
-        android:layout_width="409dp"
-        android:layout_height="433dp"
+        android:layout_width="404dp"
+        android:layout_height="406dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="0.428"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tabBar"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="0.0">
+
+    </androidx.viewpager.widget.ViewPager>
 
     <Spinner
         android:id="@+id/spinner"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#BCB5372C"
-        android:popupBackground="@android:color/holo_red_light"
+        android:layout_width="411dp"
+        android:layout_height="34dp"
+        android:background="#422323"
+        android:popupBackground="#C1502421"
         android:textAlignment="center"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.119" />
-
-    <TextView
-        android:id="@+id/headerColor"
-        android:layout_width="412dp"
-        android:layout_height="87dp"
-        android:background="#5B5A3030"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="0.124" />
 
     <TextView
         android:id="@+id/tNameHolder"
-        android:layout_width="305dp"
-        android:layout_height="41dp"
+        android:layout_width="295dp"
+        android:layout_height="34dp"
         android:text="@string/tNameHolder"
         android:textAlignment="gravity"
-        android:textColor="#000000"
-        android:textSize="30sp"
+        android:textColor="#FFFFFF"
+        android:textSize="28sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/imageView2"
-        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintEnd_toStartOf="@+id/imgProfilePicture"
+        app:layout_constraintHorizontal_bias="0.658"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.065" />
 
-    <Button
-        android:id="@+id/bAddClass"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/tAddClass"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.344"
-        app:layout_constraintStart_toEndOf="@+id/resetSharedPref"
+        app:layout_constraintHorizontal_bias="0.953"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.901" />
+        app:layout_constraintVertical_bias="0.972">
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabActivityMainResetSharedPrefs"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:clickable="true"
+            android:contentDescription="@string/tResetPrefDesc"
+            android:focusable="true"
+            android:visibility="invisible"
+            app:backgroundTint="#2B0C0C"
+            app:srcCompat="@drawable/reset"
+            tools:visibility="visible" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabActivityMainAddClass"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:clickable="true"
+            android:contentDescription="@string/tAddClassDesc"
+            android:focusable="true"
+            android:visibility="invisible"
+            app:backgroundTint="#2B0C0C"
+            app:srcCompat="@drawable/add_icon"
+            tools:visibility="visible" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabActivityMainBase"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:clickable="true"
+            android:contentDescription="@string/tBaseDesc"
+            android:focusable="true"
+            app:backgroundTint="#2B0C0C"
+            app:srcCompat="@drawable/plus" />
+
+    </LinearLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

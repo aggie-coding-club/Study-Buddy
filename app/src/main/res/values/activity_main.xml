@@ -20,8 +20,13 @@
         >Open Camera</string>
     <string name="tAddClass">
         Add A Class</string>
-    <string-array name="classes_array">
-        <item>POLS 205</item>
-        <item>MATH 251</item>
-    </string-array>
+    <string name="tBaseDesc">
+        Base Button
+    </string>
+    <string name="tResetPrefDesc">
+        Reset Shared Preferences
+    </string>
+    <string name="tAddClassDesc">
+        Add Class
+    </string>
 </resources>

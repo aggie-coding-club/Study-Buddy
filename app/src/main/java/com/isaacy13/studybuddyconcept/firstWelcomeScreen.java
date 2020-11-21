@@ -42,6 +42,7 @@ public class firstWelcomeScreen extends AppCompatActivity {
         String username = tv.getText().toString();
         if (validUsername(username)) {
             saveUserName(username);
+            finish(); // close current current && start new activity
             startActivity(new Intent(firstWelcomeScreen.this, MainActivity.class));
         }
     }
