@@ -67,9 +67,9 @@ def findHighlightedWordDefinitions(path):
     stepSizeX = 1
     stepSizeY = 1
     
-    if selected_image.height > 200:
-        stepSizeX = round(image_width / 200)
     if selected_image.width > 200:
+        stepSizeX = round(image_width / 200)
+    if selected_image.height > 200:
         stepSizeY = round(image_height / 200)
     
     #Scans for colors in the image and records their frequency
@@ -87,7 +87,7 @@ def findHighlightedWordDefinitions(path):
             if not colorMatch:
                 colorList.append([list(selected_image.getpixel((x,y))), 1])
             
-        
+
     print("Color frequency: ")
     for i in colorList:
         print(i)
@@ -162,7 +162,7 @@ def findHighlightedWordDefinitions(path):
             if detect_darker_color(selected_image.getpixel((x,color[4])), color[0], overflowTextContrastTolerance):
                 color[4] = color[4] + ((color[4] - color[2]) * overflowTextHeightMultiplier)
                 
-
+    
 
     #Colors areas outside of coordinate blocks white and saves as new images for each coordinate block
     imageCount = 0
