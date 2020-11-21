@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tTitle">
+        Add a Class
+    </string>
+    <string name="tAddClassHint">
+        Class Name
+    </string>
+    <string name="bAddClassSubmitText">
+        Add Class
+    </string>
+</resources>

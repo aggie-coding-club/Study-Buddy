@@ -3,13 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#6E59BA"
-    tools:context=".ReviewFlashcardsFragment" >
+    android:background="#FFFFFFFF"
+    tools:context=".ReviewFlashcardsFragment">
 
     <TextView
         android:id="@+id/textView3"
-        android:layout_width="wrap_content"
+        android:layout_width="355dp"
         android:layout_height="wrap_content"
         android:text="Review Flashcards Fragment"
+        android:textColor="#000000"
         android:textSize="36sp" />
 </FrameLayout>
