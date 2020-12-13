@@ -36,11 +36,13 @@ public class UploadNotesFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+    private static final int SELECT_IMAGE = 1;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
     private Button cam;
+    private Button gallery;
 
     public UploadNotesFragment() {
         // Required empty public constructor
@@ -82,6 +84,8 @@ public class UploadNotesFragment extends Fragment {
 
         // Open Camera //
         cam = view.findViewById(R.id.TakePhoto);
+        gallery = view.findViewById(R.id.OpenGallery);
+
         cam.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -90,9 +94,20 @@ public class UploadNotesFragment extends Fragment {
             }
         });
 
+        gallery.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                Intent galIntent = new Intent();
+                galIntent.setType("image/*");
+                galIntent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(galIntent, "Select Picture"),SELECT_IMAGE);
+            }
+        });
+
         // Inflate the layout for this fragment
         return view;
     }
+
 
 }
 
