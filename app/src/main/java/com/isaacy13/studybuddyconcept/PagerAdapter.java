@@ -18,11 +18,11 @@ public class PagerAdapter extends FragmentPagerAdapter {
     public Fragment getItem(int position) {
         switch(position) {
             case 0:
-                return new UploadNotesFragment();
-            case 1:
                 return new ReviewFlashcardsFragment();
-            case 2:
+            case 1:
                 return new GoalProgressFragment();
+            case 2:
+                return new UploadNotesFragment();
             default:
                 return null;
         }
