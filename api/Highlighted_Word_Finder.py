@@ -6,6 +6,10 @@ from PIL import Image
 from google.cloud import vision
 import requests
 
+#TODOs
+#Use JSON text coordinates to find highlights
+#Filter out background and text colors
+
 #Returns true or false depending on whether the two colors are similar enough based on the tolerance parameter
 def compareColors(colorList_1,colorList_2,tolerance):
     
@@ -55,27 +59,35 @@ def recursiveFindHighlightBlock(image, color, tolerance, x, y, xStep, yStep, top
 #Scans image with a step size depending on image size and uses Google Vision OCR and Google Dictionary API on highlighted words
 def findHighlightedWordDefinitions(path):
     selected_image = PIL.Image.open(path)
+    
+    #Variables for image width and height
     image_width = selected_image.width
     image_height = selected_image.height
+    
+    #colorList's format is [[R,G,B], # of pixel instances]
     colorList = []
     
     colorScanTolerance = 100
     highlightColorTolerance = 50
-    overflowTextContrastTolerance = 0.9
-    overflowTextHeightMultiplier = 0.35
     
+    #Sets initial scan step size to 1
     stepSizeX = 1
     stepSizeY = 1
     
+    #Adjusts scan step size to be 1/200 of the width/height of the image in case the image is massive
     if selected_image.width > 200:
         stepSizeX = round(image_width / 200)
     if selected_image.height > 200:
         stepSizeY = round(image_height / 200)
     
-    #Scans for colors in the image and records their frequency
+    #Scans for colors in the image, averages out RGB values, and records their frequency
+    #Scans the whole image with step sizes based on stepSizeX and stepSizeY
     for x in range(0, image_width, stepSizeX):
         for y in range(0, image_height, stepSizeY):
             colorMatch = False
+            #For each pixel scanned, look through the color list and compare the current pixel's color.
+            #If there's a color that's close enough, average together the colorList color's RGB values 
+            #and the current pixel's RGB values. Also +1 to the number of instances of that color.
             for color in colorList:
                 if compareColors(selected_image.getpixel((x,y)), color[0],colorScanTolerance):
                     color[0][0] = round(color[0][0]*((color[1]-1)/color[1]) + selected_image.getpixel((x,y))[0] / color[1])
@@ -84,57 +96,14 @@ def findHighlightedWordDefinitions(path):
                     color[1] += 1
                     colorMatch = True
                     break;
+            #Otherwise, if the current pixel's color isn't close to one already in the list, add it onto the list
             if not colorMatch:
                 colorList.append([list(selected_image.getpixel((x,y))), 1])
-            
 
     print("Color frequency: ")
     for i in colorList:
         print(i)
     
-    #Finds coordinates of top left and bottom right of each color
-    coordinatesList = []
-    for color in colorList:
-        coordinatesList.append([color[0], image_width, image_height, 0, 0])
-        
-    for x in range(0, image_width, stepSizeX):
-        for y in range(0, image_height, stepSizeY):
-            for color in coordinatesList:
-                if compareColors(selected_image.getpixel((x,y)), color[0], highlightColorTolerance):
-                    if x < color[1]:
-                        color[1] = x
-                    if x > color[3]:
-                        color[3] = x
-                    if y < color[2]:
-                        color[2] = y
-                    if y > color[4]:
-                        color[4] = y
-                        
-    print("Initial highlight coordinates: ")
-    for i in coordinatesList:
-        print(i)
-        
-    
-    #Separates multiple highlighted words through recursively finding where individual blocks of color start and end for each color
-    tempCoordinatesList = []
-    for color in coordinatesList:
-        print("Color: " + str(color[0]))
-        visitedMatrix = [[False] * image_height for _ in range(image_width)]
-        for x in range(color[1], color[3], stepSizeX * 6):
-            for y in range(color[2], color[4], stepSizeY * 6):
-                topLeft = [color[3],color[4]]
-                bottomRight = [color[1],color[2]]
-                if not (visitedMatrix[x][y]):
-                    recursiveFindHighlightBlock(selected_image, color[0], highlightColorTolerance, x, y, stepSizeX * 6, stepSizeY * 6, topLeft, bottomRight, visitedMatrix)
-                if not ([color[0],topLeft[0],topLeft[1],bottomRight[0],bottomRight[1]] in tempCoordinatesList) and not (topLeft[0] == color[3] and topLeft[1] == color[4] and bottomRight[0] == color[1] and bottomRight[1] == color[2]) and not (topLeft[0] == bottomRight[0] or topLeft[1] == bottomRight[1]):
-                    tempCoordinatesList.append([color[0],topLeft[0],topLeft[1],bottomRight[0],bottomRight[1]])
-    
-    coordinatesList = tempCoordinatesList
-
-    
-    print("Separated highlight coordinates: ")
-    for i in coordinatesList:
-        print(i)
 
     
     #Scans coordinate blocks to filter out unhighlighted text
@@ -153,16 +122,7 @@ def findHighlightedWordDefinitions(path):
     for i in coordinatesList:
         print(i)
     
-    
-    #Checks for text sticking out of the highlight and adjusts highlight coordinates to account for it
-    for color in coordinatesList:
-        for x in range(color[1], color[3], stepSizeX):
-            if detect_darker_color(selected_image.getpixel((x,color[2])), color[0], overflowTextContrastTolerance):
-                color[2] = color[2] - ((color[4] - color[2]) * overflowTextHeightMultiplier)
-            if detect_darker_color(selected_image.getpixel((x,color[4])), color[0], overflowTextContrastTolerance):
-                color[4] = color[4] + ((color[4] - color[2]) * overflowTextHeightMultiplier)
-                
-    
+
 
     #Colors areas outside of coordinate blocks white and saves as new images for each coordinate block
     imageCount = 0
@@ -206,7 +166,7 @@ def findHighlightedWordDefinitions(path):
     
 #Google Vision function that returns words in an image as strings as long as they're only single words
 def detect_document(path):
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="../../../StudyBuddyResources/service_account_token.json"
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="acc-study-buddy-2ca6d1c6098d.json"
     
     client = vision.ImageAnnotatorClient()
     
@@ -270,6 +230,39 @@ def detect_document(path):
             'https://cloud.google.com/apis/design/errors'.format(
                 response.error.message))
 
+#Gives bounding boxes and other information
+def detect_text(path):
+    """Detects text in the file."""
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="acc-study-buddy-2ca6d1c6098d.json"
+    
+    client = vision.ImageAnnotatorClient()
+
+    with io.open(path, 'rb') as image_file:
+        content = image_file.read()
+
+    image = vision.Image(content=content)
+
+    response = client.text_detection(image=image)
+    texts = response.text_annotations
+    print('Texts:')
+
+    for text in texts:
+        print('\n"{}"'.format(text.description))
+
+        vertices = (['({},{})'.format(vertex.x, vertex.y)
+                    for vertex in text.bounding_poly.vertices])
+
+        print('bounds: {}'.format(','.join(vertices)))
+        
+    if response.error.message:
+        raise Exception(
+            '{}\nFor more info on error messages, check: '
+            'https://cloud.google.com/apis/design/errors'.format(
+                response.error.message))
+                
+    return texts
+
+
 #Requests dictionary data from Google Dictionary and returns a list of definitions for a given word
 def findDefinition(word):
     if not (type(word) is str):
@@ -303,6 +296,7 @@ def findDefinition(word):
     return definitionList
 
 
-findHighlightedWordDefinitions("Images/MultipleHighlightsImage.jpg")
+#findHighlightedWordDefinitions("Images/MultipleHighlightsImage.jpg")
+detect_text("Images/MultipleHighlightsImage.jpg")
 #detect_document("Images/Processing Images/2.jpg")
 #findDefinition("type")
