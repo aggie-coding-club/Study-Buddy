@@ -6,10 +6,6 @@ from PIL import Image
 from google.cloud import vision
 import requests
 
-#TODOs
-#Use JSON text coordinates to find highlights
-#Filter out background and text colors
-
 #Returns true or false depending on whether the two colors are similar enough based on the tolerance parameter
 def compareColors(colorList_1,colorList_2,tolerance):
     
@@ -30,6 +26,23 @@ def detect_darker_color(possibleDarkerColor, lightColor, tolerancePercentage):
         return True
     else:
         return False
+        
+#Given the coordinates for the four vertices of a bounding box, return m and b in y=mx+b for the lines connecting the vertices
+def get_bounding_equations(top_left, top_right, bottom_right, bottom_left):
+    #m=dy/dx
+    #y=mx+b --> b=y-mx
+    top_equation_m = (top_right.y - top_left.y)/(top_right.x - top_left.x)
+    top_equation_b = (top_left.y) - (top_equation_m)(top_left.x)
+    bottom_equation_m = (bottom_right.y - bottom_left.y)/(bottom_right.x - bottom_left.x)
+    bottom_equation_b = (bottom_left.y) - (bottom_equation_m)(bottom_left.x)
+    #m=dx/dy
+    #x=my+b --> b=x-my
+    left_equation_m = (top_left.x - bottom_left.x)/(top_left.y - bottom_left.y)
+    left_equation_b = (bottom_left.x) - (left_equation_m)(bottom_left.y)
+    right_equation_m = (top_right.x - bottom_right.x)/(top_right.y - bottom_right.y)
+    right_equation_b = (bottom_right.x) - (right_equation_m)(bottom_right.y)
+    
+    return [[top_equation_m, top_equation_b], [bottom_equation_m, bottom_equation_b], [left_equation_m, left_equation_b], [right_equation_m, right_equation_b]]
         
 #Recursive function for finding the top left coordinates and bottom right coordinates of individual blocks of highlighting
 def recursiveFindHighlightBlock(image, color, tolerance, x, y, xStep, yStep, topLeft, bottomRight, visitedMatrix):
@@ -103,8 +116,18 @@ def findHighlightedWordDefinitions(path):
     print("Color frequency: ")
     for i in colorList:
         print(i)
+        
+    #TODO: Filter out background color and text color. Idea: If you can determine the background color, you can filter out text with that color as its background
     
-
+    #A list of all the text found in the image. Includes information like bounding box vertices.
+    text_list = detect_text(path)
+    
+    for text_item in text_list:
+        bounding_vertices = text_item.bounding_poly.vertices
+        bounding_equations = get_bounding_equations(bounding_vertices[0],bounding_vertices[1],bounding_vertices[2],bounding_vertices[3]);
+        #TODO: Determining if a text_item is highlighted based on a scan within its bounding box
+    
+    
     
     #Scans coordinate blocks to filter out unhighlighted text
     for color in coordinatesList:
@@ -244,6 +267,9 @@ def detect_text(path):
 
     response = client.text_detection(image=image)
     texts = response.text_annotations
+    
+    text_list = []
+    
     print('Texts:')
 
     for text in texts:
@@ -253,6 +279,7 @@ def detect_text(path):
                     for vertex in text.bounding_poly.vertices])
 
         print('bounds: {}'.format(','.join(vertices)))
+        text_list.append(text)
         
     if response.error.message:
         raise Exception(
@@ -260,7 +287,7 @@ def detect_text(path):
             'https://cloud.google.com/apis/design/errors'.format(
                 response.error.message))
                 
-    return texts
+    return text_list
 
 
 #Requests dictionary data from Google Dictionary and returns a list of definitions for a given word
